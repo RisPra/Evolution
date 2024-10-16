@@ -1,0 +1,3 @@
+# TODO:
+    > Simulation.beings stores: list[Cell, list[int, int]]
+    > Simulation.draw iterates over beings and prints them on screen using pygame
