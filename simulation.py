@@ -1,106 +1,105 @@
-import os
-import time
-import random
 from cell import Cell
+from visualiser_fetcher import VisualiserFetcher
+from utils import clrscr
 
-def clear() -> None:
-    os.system("cls")
+from time import sleep
+from random import randint
 
 class Simulation:
+    
+    EMPTY = None
+    COUNT = 0
+    FRAMERATE = 10
 
-    def __init__(self, dimensions: tuple[int, int] = None) -> None:
-
+    VISUALISER = "terminal"
+    
+    def __init__(self, dimensions: tuple, object_class) -> None:
+        self.framerate = self.FRAMERATE
+        self.object_class = object_class
+        self._setup_environment(dimensions)
         self.beings = []
-        self.icons = {
-            "empty": "  ",
-            "default": "AA",
-            "caution": "!!",
-            "vertical_border": "--",
-            "horizontal_border": "|",
-        }
-
-        if dimensions is None:
-            dimensions = (10, 10)
+        self.locations = []
+        
+        
+        self.visualizer = VisualiserFetcher.get_class(self.VISUALISER)(*dimensions, object_class)
+    
+    def _set_framerate(self, framerate: float) -> None:
+        if type(framerate) is int:
+            self.framerate = framerate
+    
+    def _setup_environment(self, dimensions: tuple) -> None:
         self.dimensions = dimensions
-
-        # self.map = [[None for _ in range(self.dimensions[0])] for _ in range(self.dimensions[1])]
-        # dimensions
-
-    def birth(self, parent: Cell = None, position: tuple[int, int] = None):
-        
-        # Create being
-        if type(parent) is Cell:
-
-            # DNA replication
-            dna = parent.dna
-
-            # Mutation
-            print("trying to mutate")
-            if random.randint(1, 100) < 50:
-                mutated = random.randint(0, len(dna)-1)
-                dna = dna[:mutated] + "#" + dna[mutated+1:]
-                print(f'! Mutated: {dna}')
-
-            being = Cell(dna=dna, icon=parent.icon)
-
-        # Position being
-        if position:
-            self.map[position[0]][position[1]] = being
+        w, h = dimensions
+        self.environment = [[self.EMPTY for i in range(w)] for j in range(h)]
+    
+    def _is_available_position(self, position) -> bool:
+        if 0 <= position[0] and position[0] < self.dimensions[0] and 0 <= position[1] and position[1] < self.dimensions[1]:
+            return self.environment[position[1]][position[0]] is self.EMPTY
         else:
-            occupied = [_[1] for _ in self.beings]
-            while True:
-                _x = random.randint(0, self.dimensions[0]-1)
-                _y = random.randint(0, self.dimensions[1]-1)
-                if (_x, _y) in occupied:
-                    continue
-                else:
-                    position = (_x, _y)
+            return False
+    
+    def _get_available_position(self) -> None:
+        position = None
+        while True:
+            position = (randint(0, self.dimensions[1]-1), randint(0, self.dimensions[0]-1))
+            if self._is_available_position(position):
+                break
+        return position
+    
+    def get_surviving_beings(self):
+        return self.beings, self.locations
+    
+    def _add_beings(self, count: int, beings: list = None) -> None:
+        if beings is None:
+            beings = [None] * count
+        for being in beings:
+            self._add_being(being)
+
+    def _add_being(self, being: str = None) -> None:
+        position = self._get_available_position()
+        if type(being) is not self.object_class:
+            being = self.object_class()
+        self.beings.append(being)
+        self.locations.append(position)
+        self.environment[position[1]][position[0]] = being
+        self.COUNT += 1
+    
+    def handle_events(self) -> None:
+        for index, (being, location) in enumerate(zip(self.beings, self.locations)):
+            direction = being.act()
+            positions = [
+                (location[0] + direction[0], location[1] + direction[1]),
+                (location[0]               , location[1] + direction[1]),
+                (location[0] + direction[0], location[1]),
+            ]
+            for position in positions:
+                if self._is_available_position(position):
+                    self.environment[position[1]][position[0]] = self.environment[location[1]][location[0]]
+                    self.environment[location[1]][location[0]] = self.EMPTY
+                    self.locations[index] = position
                     break
-
-        self.beings.append((being, position))
+                else:
+                    continue
     
-    def draw(self, draw_borders: bool = True) -> None:
+    def show(self) -> None:
+        clrscr()
+        self.visualizer.visualize(self.beings, self.locations)
         
-        # Population details
-        for being, positions in self.beings:
-            print(f'  {being}')
+    def run(self, time: int, count: int, beings: list[str] = None) -> None:
 
-        map = [[None for _ in range(self.dimensions[0])] for _ in range(self.dimensions[1])]
+        self._add_beings(count, beings)
 
-        for being, position in self.beings:
-            map[position[0]][position[1]] = (being.icon if being.icon else self.icons["default"])
+        passed = 0
 
-        print(self.icons["vertical_border"]*((self.dimensions[0]+1)*int(draw_borders)))
+        self.show()
+        print(f"time {passed}")
+        sleep(1/self.framerate)
 
-        for y, row in enumerate(map):
+        while passed < time:
             
-            print(self.icons["horizontal_border"]*int(draw_borders), end="")
-            
-            for x, cell in enumerate(row):
-                print(cell if cell else self.icons["empty"], end="")
+            passed = round(passed+(1/self.framerate), 3)
+            sleep(1/self.framerate)
 
-            print(self.icons["horizontal_border"]*int(draw_borders))
-
-        print(self.icons["vertical_border"]*((self.dimensions[0]+1)*int(draw_borders)))
-
-    def handle(self, Cell):
-        pass
-
-    def simulate(self, duration: int = None, framerate: int = None):
-        
-        if duration is None:
-            duration = 10
-
-        if framerate is None:
-            framerate = 1
-
-        for frame in range(duration):
-            clear()
-            
-            # Events
-
-            print(f'# Frame: {int(frame)+1}')
-            self.draw()
-            time.sleep(framerate)
-    
-        print("END")
+            self.handle_events()
+            self.show()
+            print(f"time {passed}")

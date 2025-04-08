@@ -1,17 +1,11 @@
-from cell import Cell
 from simulation import Simulation
+from cell import Cell
 
-def main() -> None:
-    sim = Simulation(
-        dimensions=(20, 20)
-    )
-
-    # Add beings
-    population = 5
-    for _ in range(population):
-        sim.birth(Cell(dna=str(_)*4, icon=chr(_+65)*2))
-
-    sim.simulate()
-
+def main():
+    s = Simulation((30, 20), Cell)
+    s._set_framerate(10)
+    s.add_beings(15)
+    s.run(2)
+    
 if __name__ == "__main__":
     main()
