@@ -5,7 +5,6 @@ def get_rgb(number: int) -> tuple:
     # test this more - why should numerator be -1ed
 
     # return type tuple with variable length
-    # cell colour should depend on abilities and not be random
     """
     Convert a two-digit number(0-99) to rgb(0-255) values
     """
@@ -17,7 +16,7 @@ def get_rgb(number: int) -> tuple:
         rgb.append(int(combination/256**i))
         combination = combination%256**i
     
-    return rgb
+    return tuple(rgb)
 
 def clrscr():
     os.system("cls")

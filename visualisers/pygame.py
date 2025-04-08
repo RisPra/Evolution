@@ -1,7 +1,12 @@
 import os
 import pygame
+from utils import get_rgb
 
-class Terminal:
+BLACK = (0, 0, 0)
+GRAY = (127, 127, 127)
+WHITE = (255, 255, 255)
+
+class Pygame:
 
     BOX_CHARACTERS = {
         "top"   : ("╔", "══", "╗"),
@@ -26,26 +31,42 @@ class Terminal:
         self.surface = pygame.display.set_mode((self.width*10, self.height*10))
 
     def _get_object_appearance(self, object) -> str:
-        return object.dna[:2]
+        # dependant on chars not separate appearance
+        return get_rgb(int(object.dna[:2]))
         
-    def visualize(self, objects: list, locations: list) -> None:
+    def visualize(self, name: str, objects: list, locations: list, time: int) -> None:
 
-        being = objects[0]
-        pygame.circle()
-        self.surface.draw.re
-        self.surface.blit()
+        radius = 5
+        offset = {
+            "x" : radius,
+            "y" : radius
+        }
+
+        self.surface.fill(BLACK)
 
         environment = [[None for j in range(self.width)] for i in range(self.height)]
         for object, location in zip(objects, locations):
             environment[location[1]][location[0]] = object
         
-        # for i, row in enumerate(environment):
-        #     print()
-        #     print(self.BOX_CHARACTERS["middle"][0], end = "")
-        #     for j, point in enumerate(row):
-        #         object = environment[i][j]
-        #         if self.is_valid_object(object):
-        #             print(self._get_object_appearance(object), end = "")
-        #         else:
-        #             print(self.BOX_CHARACTERS["middle"][1], end = "")
-        #     print(self.BOX_CHARACTERS["middle"][2], end = "")
+        for i, row in enumerate(environment):
+            for j, point in enumerate(row):
+                object = environment[i][j]
+                if self.is_valid_object(object):
+                    pygame.draw.circle(
+                        self.surface,
+                        self._get_object_appearance(object),
+                        (
+                            (j*radius*2)+(offset["x"]),
+                            (i*radius*2)+(offset["y"])
+                        ),
+                        radius = 5
+                    )
+
+        font = pygame.font.SysFont("consolas", 20, bold=True)
+
+        text = font.render(f"{name} : {time}", True, GRAY)
+        self.surface.blit(text, (+1, +1))
+        text = font.render(f"{name} : {time}", True, WHITE)
+        self.surface.blit(text, (0, 0))
+
+        pygame.display.update()

@@ -1,4 +1,5 @@
 from visualisers.terminal import Terminal
+from visualisers.pygame import Pygame
 
 
 class VisualiserFetcher:
@@ -8,6 +9,6 @@ class VisualiserFetcher:
         if visualiser == "terminal":
             return Terminal
         elif visualiser == "pygame":
-            return Terminal
+            return Pygame
         else:
             raise ValueError(f"Visualiser '{visualiser}' not found.")

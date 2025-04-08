@@ -41,28 +41,24 @@ class Experiment:
         self.generation = 0
         next_generation = None
         for self.generation in range(1, generations+1):
-            s = Simulation(self.dimensions, self.object_class)
-            s._set_framerate(framerate)
+
             if next_generation is not None:
                 count = len(next_generation)
+
+            s = Simulation(self.generation, self.dimensions, self.object_class)
+            s._set_framerate(framerate)
             s.run(
                 time = time_per_generation,
                 count = initial_count,
-                beings = next_generation
+                beings = next_generation,
             )
 
             next_generation = self.select(*(s.get_surviving_beings()))
-
-            # if self.generation == 25:
-            #     input()
-
-        print("end")
 
 def main():
     e = Experiment((50, 50), Cell)
     '''
     ##OOOOOO
-
     OOOOOOOO
     OOOOOOOO
     OOOOOO##
@@ -80,7 +76,7 @@ def main():
             [(0.1, 0.75, 0, 1), (0.25, 1, 0, 0.75)]
         ]*25
     )
-    e.run(50, 0.5, 500, 200)
+    e.run(50, 0.25, 500, 200)
 
 
 main()

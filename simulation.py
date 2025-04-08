@@ -11,9 +11,10 @@ class Simulation:
     COUNT = 0
     FRAMERATE = 10
 
-    VISUALISER = "terminal"
+    VISUALISER = "pygame"
     
-    def __init__(self, dimensions: tuple, object_class) -> None:
+    def __init__(self, name: str, dimensions: tuple, object_class) -> None:
+        self.name = name
         self.framerate = self.FRAMERATE
         self.object_class = object_class
         self._setup_environment(dimensions)
@@ -82,24 +83,22 @@ class Simulation:
                     continue
     
     def show(self) -> None:
-        clrscr()
-        self.visualizer.visualize(self.beings, self.locations)
+        self.visualizer.visualize(self.name, self.beings, self.locations, self.time_passed)
         
     def run(self, time: int, count: int, beings: list[str] = None) -> None:
 
         self._add_beings(count, beings)
 
-        passed = 0
+        self.time_passed = 0
 
         self.show()
-        print(f"time {passed}")
+        # print(f"time {passed}")
         sleep(1/self.framerate)
 
-        while passed < time:
+        while self.time_passed < time:
             
-            passed = round(passed+(1/self.framerate), 3)
+            self.time_passed = round(self.time_passed+(1/self.framerate), 3)
             sleep(1/self.framerate)
 
             self.handle_events()
             self.show()
-            print(f"time {passed}")
