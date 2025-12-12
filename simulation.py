@@ -21,7 +21,6 @@ class Simulation:
         self.beings = []
         self.locations = []
         
-        
         self.visualizer = VisualiserFetcher.get_class(self.VISUALISER)(*dimensions, object_class)
     
     def _set_framerate(self, framerate: float) -> None:

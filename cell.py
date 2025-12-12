@@ -7,8 +7,6 @@ class Cell:
 class Cell:
     
     # color should not be an individual expression, it should be made out of dna representation
-
-
     # 00 00 00000000
     ATTRIBUTES = ["colour", "will", "up", "down", "left", "right"]
     MUTATION_PERCENT = 5
